@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.ALLOWED_ORIGIN ?? 'https://clawlearn.vercel.app'
+  ),
   title: 'Claw Learn — AI Visual Math Tutor',
   description:
     'Ask math and physics questions naturally. Watch concepts come alive with AI-powered animated explanations inspired by 3Blue1Brown.',
