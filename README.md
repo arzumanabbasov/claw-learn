@@ -11,7 +11,7 @@ Ask any math or physics question. Watch it come alive.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![Voice by ElevenLabs](https://img.shields.io/badge/Voice-ElevenLabs-orange)](https://elevenlabs.io)
 
-[Live Demo](https://clawlearn.vercel.app) · [Report a Bug](https://github.com/your-username/clawlearn/issues) · [Request a Feature](https://github.com/your-username/clawlearn/issues)
+[Live Demo](https://clawlearn.vercel.app) · [Report a Bug](https://github.com/your-username/claw-learn/issues) · [Request a Feature](https://github.com/your-username/claw-learn/issues)
 
 </div>
 
