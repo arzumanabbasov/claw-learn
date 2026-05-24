@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
+/* ─── Design Tokens ─────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink:          #0d1117;
+  --ink-muted:    #3a3f4a;
+  --ink-faint:    #6b7280;
+  --cream:        #f5f3ee;
+  --cream-warm:   #eceae3;
+  --accent:       #e8a020;
+  --accent-light: #fef3dc;
+  --indigo:       #1e2a5e;
+  --indigo-mid:   #2d3d8a;
+  --indigo-light: #e8eaf6;
+  --grid:         rgba(13, 17, 23, 0.06);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: var(--cream);
+  color: var(--ink);
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-mono-dm {
+  font-family: 'DM Mono', monospace;
+}
+
+/* ─── Background Grid ────────────────────────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.bg-grid-white {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Staggered hero entrance */
+.hero-eyebrow  { animation: fadeUp 0.6s 0.0s ease both; }
+.hero-headline { animation: fadeUp 0.6s 0.1s ease both; }
+.hero-sub      { animation: fadeUp 0.6s 0.2s ease both; }
+.hero-cta      { animation: fadeUp 0.6s 0.3s ease both; }
+.hero-canvas   { animation: fadeUp 0.8s 0.4s ease both; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(13,17,23,0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(13,17,23,0.25); }
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13,17,23,0.15) transparent;
+}
+
+/* Dark panel scrollbar */
+.scrollbar-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+.scrollbar-dark::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ─── Misc ───────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+::selection {
+  background: rgba(30, 42, 94, 0.2);
+  color: var(--ink);
+}
+
+canvas {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+button { user-select: none; -webkit-user-select: none; }
+
+:focus-visible {
+  outline: 2px solid rgba(30, 42, 94, 0.4);
+  outline-offset: 2px;
 }
