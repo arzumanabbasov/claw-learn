@@ -39,11 +39,14 @@ export function useSpeechEngine({
 
   useEffect(() => {
     let cancelled = false;
+    // Only probe availability once — don't retry on failure to avoid
+    // hammering ElevenLabs when the free tier concurrent limit is hit.
     fetchToken()
       .then((token) => { if (!cancelled) setIsAvailable(token !== null); })
       .catch(() => { if (!cancelled) setIsAvailable(false); });
     return () => { cancelled = true; };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — run once on mount only
 
   const conversation = useConversation({
     onMessage: (event) => {

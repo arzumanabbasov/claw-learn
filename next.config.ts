@@ -8,6 +8,16 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '';
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  images: {
+    remotePatterns: [
+      {
+        // Google profile pictures (OAuth avatars)
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
+  },
+
   async headers() {
     return [
       // ── Security headers on every response ──────────────────────────────
