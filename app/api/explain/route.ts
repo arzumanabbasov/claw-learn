@@ -100,11 +100,11 @@ export async function POST(req: NextRequest) {
     const scenePlan = await generateScenePlan(question.trim(), config, safeHistory);
 
     return NextResponse.json(
-      { scenePlan, remaining: rl.remaining - 1, limit: rl.limit },
+      { scenePlan, remaining: rl.remaining, limit: rl.limit },
       {
         headers: {
           'X-RateLimit-Limit':     String(rl.limit),
-          'X-RateLimit-Remaining': String(Math.max(0, rl.remaining - 1)),
+          'X-RateLimit-Remaining': String(rl.remaining),
         },
       }
     );
