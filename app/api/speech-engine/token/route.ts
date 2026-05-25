@@ -1,12 +1,22 @@
 // API route: GET /api/speech-engine/token
 // Mints a short-lived WebRTC conversation token for the Speech Engine.
-// Keeps the ElevenLabs API key and Speech Engine ID out of the browser.
+// Requires authentication — keeps ElevenLabs keys out of the browser.
 
 import { NextResponse } from 'next/server';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
+import { auth } from '@/auth';
+import { DEV_BYPASS } from '@/lib/devAuth';
 
 export async function GET() {
-  const apiKey  = process.env.ELEVENLABS_API_KEY;
+  // ── Auth ─────────────────────────────────────────────────────────────────
+  if (!DEV_BYPASS) {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
+  const apiKey   = process.env.ELEVENLABS_API_KEY;
   const engineId = process.env.ELEVENLABS_SPEECH_ENGINE_ID;
 
   if (!apiKey || !engineId) {

@@ -1,32 +1,39 @@
 // API route: POST /api/narrate
-// Converts text to speech using ElevenLabs and returns audio
+// Requires authentication. Converts text to speech via ElevenLabs.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { DEV_BYPASS } from '@/lib/devAuth';
 
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
-const DEFAULT_VOICE_ID = 'pNInz6obpgDQGcFmaJgB'; // Adam
-
-const MAX_TEXT_LENGTH = 500;
+const DEFAULT_VOICE_ID   = 'pNInz6obpgDQGcFmaJgB'; // Adam
+const MAX_TEXT_LENGTH    = 500;
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Auth ───────────────────────────────────────────────────────────────
+    if (!DEV_BYPASS) {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
+    // ── Validate body ──────────────────────────────────────────────────────
     const contentType = req.headers.get('content-type') ?? '';
     if (!contentType.includes('application/json')) {
       return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 415 });
     }
 
     let body: unknown;
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-    }
+    try { body = await req.json(); }
+    catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }); }
 
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { text, elevenLabsApiKey, elevenLabsVoiceId } = body as Record<string, unknown>;
+    const { text } = body as Record<string, unknown>;
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
@@ -38,23 +45,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Client-supplied key (from in-app settings) takes precedence over env var
-    const apiKey =
-      (typeof elevenLabsApiKey === 'string' && elevenLabsApiKey.trim()
-        ? elevenLabsApiKey.trim()
-        : null) ?? process.env.ELEVENLABS_API_KEY;
+    // ── Keys from env only — never from client ─────────────────────────────
+    const apiKey  = process.env.ELEVENLABS_API_KEY;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE_ID;
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
     }
-
-    // Voice ID: client setting → env var → default
-    const voiceId =
-      (typeof elevenLabsVoiceId === 'string' && elevenLabsVoiceId.trim()
-        ? elevenLabsVoiceId.trim()
-        : null) ??
-      process.env.ELEVENLABS_VOICE_ID ??
-      DEFAULT_VOICE_ID;
 
     const response = await fetch(
       `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`,
