@@ -123,17 +123,13 @@ canvas {
   image-rendering: crisp-edges;
 }
 
-/* Canvas section: fills all space on desktop, 16:9 aspect ratio on mobile */
+/* Canvas section: fills all space on desktop, 55% on mobile */
 .canvas-section {
   flex: 1;
-  min-height: 0;
 }
 @media (max-width: 767px) {
   .canvas-section {
-    flex: none;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
+    flex: 0 0 55%;
   }
 }
 

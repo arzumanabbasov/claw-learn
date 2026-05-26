@@ -239,8 +239,11 @@ function TutorAppInner({ onBack }: TutorAppProps) {
         {/* ── Right side: canvas + (on mobile) chat below ─────────────────── */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
-          {/* Canvas section — 16:9 on mobile, fills all on desktop */}
-          <div className="canvas-section" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream-warm)', borderBottom: '1px solid rgba(13,17,23,0.1)' }}>
+          {/* Canvas section — 55% on mobile, fills all on desktop */}
+          <div
+            className="canvas-section"
+            style={{ display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream-warm)', borderBottom: '1px solid rgba(13,17,23,0.1)' }}
+          >
             {/* Title bar */}
             <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 40, borderBottom: '1px solid rgba(13,17,23,0.1)', background: 'var(--cream)' }}>
               <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 500, fontSize: 14, color: 'var(--ink-muted)' }}>
@@ -268,7 +271,7 @@ function TutorAppInner({ onBack }: TutorAppProps) {
             </div>
 
             <NarrationSubtitle text={currentNarration} isVisible={!!currentNarration} />
-          </div>{/* end canvas-section */}
+          </div>
 
           {/* Chat section — only visible on mobile, below the canvas */}
           <div
