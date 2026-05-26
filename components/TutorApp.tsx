@@ -215,12 +215,19 @@ function TutorAppInner({ onBack }: TutorAppProps) {
       </header>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
+      {/*
+        ONE AnimationCanvas instance. Layout switches between:
+        - Desktop (md+): side-by-side — conversation left, canvas right
+        - Mobile (<md):  stacked — canvas top 55%, chat bottom 45%
+        The canvas wrapper is always rendered; only its surrounding chrome changes.
+      */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
 
-      {/* DESKTOP: side-by-side (md and up) */}
-      <div className="hidden md:flex" style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-
-        {/* Left: conversation */}
-        <div style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(13,17,23,0.1)', background: 'var(--cream)' }}>
+        {/* ── Conversation panel — left on desktop, hidden on mobile ──────── */}
+        <div
+          className="hidden md:flex"
+          style={{ width: 320, flexShrink: 0, flexDirection: 'column', borderRight: '1px solid rgba(13,17,23,0.1)', background: 'var(--cream)' }}
+        >
           <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
             <ConversationPanel messages={tutor.messages} status={tutor.status} currentNarration={currentNarration || undefined} error={tutor.error} />
           </div>
@@ -229,64 +236,56 @@ function TutorAppInner({ onBack }: TutorAppProps) {
           </div>
         </div>
 
-        {/* Right: canvas */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', background: 'var(--cream-warm)' }}>
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 40, borderBottom: '1px solid rgba(13,17,23,0.1)', background: 'var(--cream)' }}>
-            <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 500, fontSize: 14, color: 'var(--ink-muted)' }}>
-              {tutor.currentPlan?.title ?? 'Blackboard'}
-            </span>
-            {isNarrating && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <motion.div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />
-                <span style={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.06em' }}>
-                  {speechEngine.isConnected ? 'Speech Engine' : 'Narrating'}
-                </span>
-              </div>
-            )}
-          </div>
-          <div style={{ flex: 1, minHeight: 0, padding: 12, paddingBottom: 0 }}>
-            <AnimationCanvas plan={tutor.currentPlan} isActive={tutor.status === 'rendering' || tutor.status === 'narrating'} onNarrate={handleNarrate} onComplete={handleAnimationComplete} onSceneChange={handleSceneChange} />
-          </div>
-          <NarrationSubtitle text={currentNarration} isVisible={!!currentNarration} />
-        </div>
-      </div>
+        {/* ── Right side: canvas + (on mobile) chat below ─────────────────── */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
-      {/* MOBILE: stacked — canvas top, chat bottom */}
-      <div className="flex md:hidden" style={{ flex: 1, flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+          {/* Canvas section — 55% on mobile, fills all on desktop */}
+          <div
+            className="canvas-section"
+            style={{ display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream-warm)', borderBottom: '1px solid rgba(13,17,23,0.1)' }}
+          >
+            {/* Title bar */}
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 40, borderBottom: '1px solid rgba(13,17,23,0.1)', background: 'var(--cream)' }}>
+              <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 500, fontSize: 14, color: 'var(--ink-muted)' }}>
+                {tutor.currentPlan?.title ?? 'Blackboard'}
+              </span>
+              {isNarrating && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <motion.div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />
+                  <span style={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.06em' }}>
+                    {speechEngine.isConnected ? 'Speech Engine' : 'Narrating'}
+                  </span>
+                </div>
+              )}
+            </div>
 
-        {/* Top: canvas — 55% of remaining height */}
-        <div style={{ flex: '0 0 55%', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream-warm)', borderBottom: '1px solid rgba(13,17,23,0.1)' }}>
-          {/* Canvas title bar */}
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px', height: 36, borderBottom: '1px solid rgba(13,17,23,0.08)', background: 'var(--cream)' }}>
-            <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 500, fontSize: 13, color: 'var(--ink-muted)' }}>
-              {tutor.currentPlan?.title ?? 'Blackboard'}
-            </span>
-            {isNarrating && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <motion.div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)' }} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />
-                <span style={{ fontFamily: '"DM Mono", monospace', fontSize: 10, color: 'var(--accent)', letterSpacing: '0.05em' }}>Narrating</span>
-              </div>
-            )}
+            {/* THE single canvas instance */}
+            <div style={{ flex: 1, minHeight: 0, padding: 12, paddingBottom: 0 }}>
+              <AnimationCanvas
+                plan={tutor.currentPlan}
+                isActive={tutor.status === 'rendering' || tutor.status === 'narrating'}
+                onNarrate={handleNarrate}
+                onComplete={handleAnimationComplete}
+                onSceneChange={handleSceneChange}
+              />
+            </div>
+
+            <NarrationSubtitle text={currentNarration} isVisible={!!currentNarration} />
           </div>
 
-          {/* Canvas fills remaining space */}
-          <div style={{ flex: 1, minHeight: 0, padding: 8, paddingBottom: 0 }}>
-            <AnimationCanvas plan={tutor.currentPlan} isActive={tutor.status === 'rendering' || tutor.status === 'narrating'} onNarrate={handleNarrate} onComplete={handleAnimationComplete} onSceneChange={handleSceneChange} />
+          {/* Chat section — only visible on mobile, below the canvas */}
+          <div
+            className="md:hidden"
+            style={{ display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream)', borderTop: '1px solid rgba(13,17,23,0.1)' }}
+          >
+            <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+              <ConversationPanel messages={tutor.messages} status={tutor.status} currentNarration={currentNarration || undefined} error={tutor.error} />
+            </div>
+            <div style={{ flexShrink: 0, borderTop: '1px solid rgba(13,17,23,0.1)', padding: '10px 12px', background: 'var(--cream)', paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
+              <QuestionInput {...inputProps} />
+            </div>
           </div>
 
-          <NarrationSubtitle text={currentNarration} isVisible={!!currentNarration} />
-        </div>
-
-        {/* Bottom: chat — 45% of remaining height */}
-        <div style={{ flex: '0 0 45%', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--cream)' }}>
-          {/* Messages — scrollable */}
-          <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-            <ConversationPanel messages={tutor.messages} status={tutor.status} currentNarration={currentNarration || undefined} error={tutor.error} />
-          </div>
-          {/* Input — pinned to bottom */}
-          <div style={{ flexShrink: 0, borderTop: '1px solid rgba(13,17,23,0.1)', padding: '10px 12px', background: 'var(--cream)', paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
-            <QuestionInput {...inputProps} />
-          </div>
         </div>
       </div>
 
