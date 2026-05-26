@@ -123,16 +123,6 @@ canvas {
   image-rendering: crisp-edges;
 }
 
-/* Canvas section: fills all space on desktop, 55% on mobile */
-.canvas-section {
-  flex: 1;
-}
-@media (max-width: 767px) {
-  .canvas-section {
-    flex: 0 0 55%;
-  }
-}
-
 button { user-select: none; -webkit-user-select: none; }
 
 :focus-visible {
