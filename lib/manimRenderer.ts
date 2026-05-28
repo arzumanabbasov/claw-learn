@@ -397,8 +397,10 @@ export class ManimRenderer {
       case 'angle_arc': {
         this.ctx.globalAlpha = t;
         const [vx, vy] = this.toPixel(el.x ?? 0, el.y ?? 0);
+        // Negate angles to convert from math convention (CCW positive, Y-up)
+        // to canvas convention (CW positive, Y-down).
         this.drawAngleArc(vx, vy,
-          el.angle1 ?? 0, el.angle2 ?? Math.PI / 2,
+          -(el.angle1 ?? 0), -(el.angle2 ?? Math.PI / 2),
           (el.arcRadius ?? 0.5) * this.S,
           color, el.label ?? '', el.rightAngle ?? false, t);
         break;
@@ -1529,6 +1531,11 @@ export class ManimRenderer {
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = 1.5;
 
+    // angle1 and angle2 are already in canvas space (negated from math space by the caller).
+    // Canvas arc goes clockwise by default. We want to sweep from angle1 toward angle2
+    // in the direction that matches the original math-space intent (CCW = anticlockwise in canvas).
+    const ccw = true; // math angles are CCW, canvas Y is flipped so we use anticlockwise=true
+
     if (rightAngle) {
       // Draw a small square corner
       const s = arcRadius * 0.7;
@@ -1540,9 +1547,10 @@ export class ManimRenderer {
       this.ctx.lineTo(vx + cos2 * s, vy + sin2 * s);
       this.ctx.stroke();
     } else {
-      const sweep = (angle2 - angle1) * t;
+      // Interpolate the end angle for animation
+      const end = angle1 + (angle2 - angle1) * t;
       this.ctx.beginPath();
-      this.ctx.arc(vx, vy, arcRadius, angle1, angle1 + sweep);
+      this.ctx.arc(vx, vy, arcRadius, angle1, end, ccw);
       this.ctx.stroke();
     }
 
