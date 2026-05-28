@@ -2,16 +2,16 @@
 
 # Claw Learn
 
-**AI-powered visual math tutor — inspired by 3Blue1Brown.**
+**Talk to it. Watch it teach.**
 
-Ask any math or physics question. Watch it come alive.
+Claw Learn is an AI-powered visual math tutor with a real-time voice interface — powered by the ElevenLabs Speech Engine. Ask any math or physics question by voice or text, and watch a synchronized animated explanation generate live in the browser.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
-[![Voice by ElevenLabs](https://img.shields.io/badge/Voice-ElevenLabs-orange)](https://elevenlabs.io)
+[![Speech Engine by ElevenLabs](https://img.shields.io/badge/Speech%20Engine-ElevenLabs-orange)](https://elevenlabs.io)
 
-[Live Demo](https://clawlearn.vercel.app) · [Report a Bug](https://github.com/your-username/claw-learn/issues) · [Request a Feature](https://github.com/your-username/claw-learn/issues)
+[Live Demo](https://clawlearn.vercel.app) · [Report a Bug](https://github.com/arzumanabbasov/claw-learn/issues) · [Request a Feature](https://github.com/arzumanabbasov/claw-learn/issues)
 
 </div>
 
@@ -19,17 +19,20 @@ Ask any math or physics question. Watch it come alive.
 
 ## What is Claw Learn?
 
-Claw Learn turns math questions into synchronized animated explanations. You ask a question — in text or by voice — and the app generates a multi-scene visual explanation with narration, rendered live in the browser.
+Claw Learn combines the ElevenLabs Speech Engine with an AI scene planner and a custom canvas renderer to turn math questions into live animated explanations with synchronized narration.
+
+The Speech Engine is the core of the experience — it handles both voice input and audio output over WebRTC, so you can speak your question, interrupt mid-explanation, and ask follow-ups without ever touching a keyboard. When the Speech Engine isn't configured, the app falls back to REST TTS and browser-based speech recognition.
 
 No slides. No textbooks. No pre-recorded videos. Every explanation is generated fresh for your exact question.
 
 ```
 You:  "Why does the derivative represent slope?"
 
-App:  → AI generates a 10-scene visual teaching plan
+App:  → ElevenLabs Speech Engine captures your voice over WebRTC
+      → AI generates a 10-scene visual teaching plan
       → Canvas renders: axes, parabola, tangent line, slope formula
-      → ElevenLabs narrates each scene in sync
-      → You can interrupt and ask follow-ups at any time
+      → Speech Engine narrates each scene in sync with the animation
+      → Interrupt at any time to ask a follow-up — just speak
 ```
 
 ---
@@ -74,8 +77,8 @@ App:  → AI generates a 10-scene visual teaching plan
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/clawlearn.git
-cd clawlearn
+git clone https://github.com/arzumanabbasov/claw-learn.git
+cd claw-learn
 npm install
 ```
 
@@ -89,7 +92,6 @@ Open `.env.local` and fill in your keys:
 
 ```env
 # AI Provider — OpenAI-compatible endpoint (required)
-# Use Gemini, OpenAI, Ollama, or any compatible provider
 OPENAI_API_KEY=your_api_key_here
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 OPENAI_MODEL=gemini-2.5-flash
@@ -100,15 +102,13 @@ ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 # Optional — override default voice (Adam)
 ELEVENLABS_VOICE_ID=pNInz6obpgDQGcFmaJgB
 
-# Optional — Speech Engine for full WebRTC voice I/O
+# Speech Engine — full WebRTC voice I/O (recommended)
 # Create an agent at https://elevenlabs.io/app/conversational-ai
 ELEVENLABS_SPEECH_ENGINE_ID=agent_xxxxxxxxxxxxxxxxxxxx
 
 # Optional — lock CORS to your domain in production
 ALLOWED_ORIGIN=https://your-domain.com
 ```
-
-Alternatively, you can configure API keys directly in the app's **Settings** page (gear icon in the top bar) — no `.env` file needed for local use.
 
 ### 3. Run
 
@@ -148,41 +148,34 @@ OPENAI_BASE_URL=http://localhost:11434/v1
 OPENAI_MODEL=llama3.1
 ```
 
-### Any other OpenAI-compatible provider
-
-Set `OPENAI_BASE_URL` to the provider's base URL and `OPENAI_MODEL` to the model name.
-
 ---
 
 ## Voice Modes
 
-Claw Learn supports two voice modes:
+### Mode 1 — ElevenLabs Speech Engine (recommended)
 
-### Mode 1 — REST TTS (default, no setup needed)
+The Speech Engine connects via WebRTC to an ElevenLabs Conversational AI agent and is the primary voice interface for Claw Learn. It handles both input and output in a single low-latency connection:
 
-When `ELEVENLABS_API_KEY` is set, each scene's narration is sent to the ElevenLabs REST API and played back as audio. Simple and reliable.
-
-### Mode 2 — Speech Engine (full voice I/O)
-
-When `ELEVENLABS_SPEECH_ENGINE_ID` is set, the app connects via WebRTC to an ElevenLabs Conversational AI agent. This enables:
-
-- **Voice input** — speak your questions, no typing needed
-- **Lower latency TTS** — audio streams directly from ElevenLabs
-- **Interruption** — speak mid-explanation to ask a follow-up
+- **Voice input** — speak your questions naturally, no typing needed
+- **Streaming TTS** — audio streams directly from ElevenLabs as each scene plays
+- **Interruption** — speak mid-explanation to redirect or ask a follow-up
+- **Lower latency** — WebRTC is significantly faster than the REST fallback
 
 **Setup:**
 1. Go to [elevenlabs.io/app/conversational-ai](https://elevenlabs.io/app/conversational-ai)
 2. Create a new agent
 3. Set the system prompt to: *"You are a math narration voice. Read exactly what the user sends you as clear, natural narration."*
-4. Copy the Agent ID and add it to `.env.local` as `ELEVENLABS_SPEECH_ENGINE_ID`
+4. Copy the Agent ID and set it as `ELEVENLABS_SPEECH_ENGINE_ID` in your `.env.local`
 
----
+The **Voice** button in the top bar connects and disconnects the Speech Engine. When connected, a pulsing green indicator shows the session is live.
 
-## Settings Page
+### Mode 2 — REST TTS fallback
 
-Claw Learn includes an in-app settings page where you can configure all API keys without touching `.env` files. Keys are stored in `localStorage` and take precedence over environment variables.
+When `ELEVENLABS_API_KEY` is set but no Speech Engine is configured, each scene's narration is sent to the ElevenLabs REST API and played back as audio. No voice input in this mode.
 
-Access it via the **⚙ Settings** button in the top bar of the tutor app.
+### Mode 3 — No voice
+
+The app works fully without any ElevenLabs configuration — text input and silent animations only.
 
 ---
 
@@ -201,9 +194,9 @@ Set these environment variables in the Vercel dashboard under **Settings → Env
 | `OPENAI_API_KEY` | ✅ | API key for your AI provider |
 | `OPENAI_BASE_URL` | ✅ | Base URL of the OpenAI-compatible endpoint |
 | `OPENAI_MODEL` | ✅ | Model name to use |
-| `ELEVENLABS_API_KEY` | Optional | ElevenLabs REST TTS |
+| `ELEVENLABS_API_KEY` | Optional | ElevenLabs REST TTS fallback |
 | `ELEVENLABS_VOICE_ID` | Optional | Override default voice |
-| `ELEVENLABS_SPEECH_ENGINE_ID` | Optional | WebRTC voice agent ID |
+| `ELEVENLABS_SPEECH_ENGINE_ID` | Recommended | WebRTC voice agent ID |
 | `ALLOWED_ORIGIN` | Recommended | Your production domain for CORS |
 
 The `vercel.json` in the repo is pre-configured.
@@ -275,18 +268,16 @@ clawlearn/
 │   ├── AnimationCanvas.tsx           # Canvas + scene sequencer
 │   ├── ConversationPanel.tsx         # Chat history
 │   ├── QuestionInput.tsx             # Input bar
-│   ├── NarrationSubtitle.tsx         # Subtitle below canvas
-│   ├── VoiceOrb.tsx                  # Voice status indicator
-│   └── SettingsModal.tsx             # API key configuration
+│   └── NarrationSubtitle.tsx         # Subtitle below canvas
 │
 ├── hooks/
 │   ├── useTutor.ts                   # Core orchestration
-│   ├── useSpeechEngine.ts            # ElevenLabs Speech Engine
+│   ├── useSpeechEngine.ts            # ElevenLabs Speech Engine (WebRTC)
 │   └── useVoice.ts                   # Web Speech API fallback
 │
 ├── lib/
 │   ├── openai.ts                     # OpenAI-compatible client + system prompt
-│   ├── manimRenderer.ts              # Canvas renderer (30+ elements)
+│   ├── animationEngine.ts            # Canvas renderer (30+ elements)
 │   ├── elevenlabs.ts                 # ElevenLabs REST helpers
 │   └── voiceRecognition.ts           # Web Speech API wrapper
 │
@@ -303,9 +294,9 @@ clawlearn/
 
 ## Security
 
-- API keys are server-side only — never exposed to the browser (unless set via the in-app settings, which stores them in `localStorage` for local use only)
+- API keys are server-side only — never exposed to the browser
 - Input is length-limited and validated on every API route
-- CORS is locked to `ALLOWED_ORIGIN` in production (set this on Vercel)
+- CORS is locked to `ALLOWED_ORIGIN` in production
 - The canvas renderer uses a safe recursive-descent math parser — no `eval` or `new Function`
 - Security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are set on all responses
 
@@ -316,7 +307,7 @@ See [SECURITY.md](SECURITY.md) for the full security policy and how to report vu
 ## Known Limitations
 
 - **No persistence** — conversation history is in-memory, cleared on page refresh
-- **Voice input** — Web Speech API requires Chrome or Edge (not Firefox/Safari)
+- **Voice input** — Web Speech API fallback requires Chrome or Edge; the Speech Engine works in all modern browsers
 - **JSON truncation** — very complex topics may cause the AI to return truncated JSON; the parser attempts recovery by finding the last complete scene
 - **ElevenLabs free tier** — 10,000 characters/month; the app continues silently without narration when quota is exceeded
 
@@ -341,7 +332,7 @@ git push origin feat/your-feature
 ## Acknowledgments
 
 - Inspired by [3Blue1Brown](https://www.3blue1brown.com/) and the [manim](https://github.com/3b1b/manim) animation library
-- Built with [ElevenLabs](https://elevenlabs.io/), [Next.js](https://nextjs.org/), and [Framer Motion](https://www.framer.com/motion/)
+- Built with the [ElevenLabs Speech Engine](https://elevenlabs.io/conversational-ai), [Next.js](https://nextjs.org/), and [Framer Motion](https://www.framer.com/motion/)
 
 ---
 
