@@ -17,8 +17,7 @@ Claw Learn is an AI-powered visual math tutor with a real-time voice interface â
 
 ---
 
-<iframe width="951" height="535" src="https://www.youtube.com/embed/TWIZvm1Dc-M" title="Claw Learn" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
+[![Watch the video](https://img.youtube.com/vi/TWIZvm1Dc-M/maxresdefault.jpg)](https://www.youtube.com/watch?v=TWIZvm1Dc-M)
 ---
 
 ## What is Claw Learn?
