@@ -17,6 +17,10 @@ Claw Learn is an AI-powered visual math tutor with a real-time voice interface â
 
 ---
 
+<iframe width="951" height="535" src="https://www.youtube.com/embed/TWIZvm1Dc-M" title="Claw Learn" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+---
+
 ## What is Claw Learn?
 
 Claw Learn combines the ElevenLabs Speech Engine with an AI scene planner and a custom canvas renderer to turn math questions into live animated explanations with synchronized narration.
