@@ -75,7 +75,9 @@ App:  → ElevenLabs Speech Engine captures your voice over WebRTC
 
 - **Node.js 18+**
 - **An OpenAI-compatible API key** — Gemini (free at [aistudio.google.com](https://aistudio.google.com/app/apikey)), OpenAI, or any compatible provider
-- **ElevenLabs API key** — optional, free tier at [elevenlabs.io](https://elevenlabs.io) (app works without it)
+- **Google OAuth credentials** — required for login ([console.cloud.google.com](https://console.cloud.google.com/))
+- **Upstash Redis** — recommended for rate limiting ([console.upstash.com](https://console.upstash.com/), free tier)
+- **ElevenLabs** — optional, free tier at [elevenlabs.io](https://elevenlabs.io)
 
 ### 1. Clone and install
 
@@ -94,22 +96,34 @@ cp .env.local.example .env.local
 Open `.env.local` and fill in your keys:
 
 ```env
-# AI Provider — OpenAI-compatible endpoint (required)
+# ── AI Provider (required) ────────────────────────────────────────────────────
 OPENAI_API_KEY=your_api_key_here
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 OPENAI_MODEL=gemini-2.5-flash
 
-# Optional — REST TTS fallback (works without this)
-ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+# ── Auth (required) ───────────────────────────────────────────────────────────
+# Generate a secret: openssl rand -base64 32
+AUTH_SECRET=your_auth_secret_here
 
-# Optional — override default voice (Adam)
+# Google OAuth — https://console.cloud.google.com/
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# ── Rate limiting — Upstash Redis (recommended) ───────────────────────────────
+# Without these, rate limiting falls back to in-memory (resets on server restart)
+# Create a free Redis DB at https://console.upstash.com/
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_token_here
+
+# ── ElevenLabs Voice (optional) ───────────────────────────────────────────────
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 ELEVENLABS_VOICE_ID=pNInz6obpgDQGcFmaJgB
 
-# Speech Engine — full WebRTC voice I/O (recommended)
+# Speech Engine — full WebRTC voice I/O
 # Create an agent at https://elevenlabs.io/app/conversational-ai
 ELEVENLABS_SPEECH_ENGINE_ID=agent_xxxxxxxxxxxxxxxxxxxx
 
-# Optional — lock CORS to your domain in production
+# ── Security ──────────────────────────────────────────────────────────────────
 ALLOWED_ORIGIN=https://your-domain.com
 ```
 
@@ -123,7 +137,36 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## AI Provider Configuration
+## Authentication
+
+Claw Learn uses [NextAuth.js v5](https://authjs.dev/) with Google OAuth. All routes require a valid session — unauthenticated users are redirected to `/login`.
+
+**Setup:**
+1. Go to [console.cloud.google.com](https://console.cloud.google.com/) → APIs & Services → Credentials
+2. Create an OAuth 2.0 Client ID (Web application)
+3. Add your domain to **Authorized JavaScript origins** and `https://your-domain.com/api/auth/callback/google` to **Authorized redirect URIs**
+4. Copy the Client ID and Secret into your env vars
+5. Generate `AUTH_SECRET` with `openssl rand -base64 32`
+
+For local dev, add `http://localhost:3000` as an authorized origin and `http://localhost:3000/api/auth/callback/google` as a redirect URI.
+
+---
+
+## Rate Limiting
+
+Each authenticated user gets **3 questions per day**, tracked by their Google user ID and reset at UTC midnight.
+
+Rate limiting uses **Upstash Redis** in production — an atomic `INCR` with a TTL set to the end of the current UTC day. This is serverless-safe and works across all Vercel edge instances.
+
+Without Upstash credentials, the app falls back to an in-memory store that resets whenever the server restarts (fine for local dev, not suitable for production).
+
+**Setup:**
+1. Create a free Redis database at [console.upstash.com](https://console.upstash.com/)
+2. Copy the REST URL and token into `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
+
+The remaining question count is shown in the top bar as a live badge and resets automatically each day.
+
+---
 
 Claw Learn uses the OpenAI-compatible API format, so it works with any provider that supports it.
 
@@ -197,6 +240,11 @@ Set these environment variables in the Vercel dashboard under **Settings → Env
 | `OPENAI_API_KEY` | ✅ | API key for your AI provider |
 | `OPENAI_BASE_URL` | ✅ | Base URL of the OpenAI-compatible endpoint |
 | `OPENAI_MODEL` | ✅ | Model name to use |
+| `AUTH_SECRET` | ✅ | NextAuth secret (`openssl rand -base64 32`) |
+| `GOOGLE_CLIENT_ID` | ✅ | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | ✅ | Google OAuth client secret |
+| `UPSTASH_REDIS_REST_URL` | Recommended | Upstash Redis URL for persistent rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN` | Recommended | Upstash Redis token |
 | `ELEVENLABS_API_KEY` | Optional | ElevenLabs REST TTS fallback |
 | `ELEVENLABS_VOICE_ID` | Optional | Override default voice |
 | `ELEVENLABS_SPEECH_ENGINE_ID` | Recommended | WebRTC voice agent ID |
